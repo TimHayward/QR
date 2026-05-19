@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Create QR Code{% endblock %}
+
+{% block content %}
+<div class="page-create">
+  <h1 class="page-title">Create a QR Code</h1>
+
+  <form id="qr-form" method="POST" action="{{ url_for('generate') }}">
+
+    <!-- ── Step 1: Name & Template ──────────────────────────── -->
+    <section class="card">
+      <h2 class="section-title">1 · Template</h2>
+
+      <div class="form-group">
+        <label for="name">QR Code Name</label>
+        <input type="text" id="name" name="name" placeholder="My Website QR" />
+      </div>
+
+      {% set tpl_icons = ['🌐', '👤', '💼', '📶', '✏️'] %}
+      <div class="template-grid">
+        {% for value, label in templates %}
+        <label class="template-card {% if loop.first %}selected{% endif %}">
+          <input type="radio" name="template_type" value="{{ value }}"
+                 {% if loop.first %}checked{% endif %}
+                 onchange="showTemplate('{{ value }}')" />
+          <span class="template-icon">{{ tpl_icons[loop.index0] }}</span>
+          <span class="template-label">{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+
+      <!-- Dynamic template fields -->
+      <div id="tpl-website" class="tpl-fields">
+        <div class="form-group">
+          <label for="url">Website URL</label>
+          <input type="url" id="url" name="url" placeholder="https://example.com" />
+        </div>
+      </div>
+
+      <div id="tpl-text" class="tpl-fields hidden">
+        <div class="form-group">
+          <label for="text">Text Content</label>
+          <textarea id="text" name="text" rows="4" placeholder="Enter your text here…"></textarea>
+        </div>
+      </div>
+
+      <div id="tpl-linkedin" class="tpl-fields hidden">
+        <div class="form-group">
+          <label for="linkedin_username">LinkedIn Username or Profile URL</label>
+          <input type="text" id="linkedin_username" name="linkedin_username"
+                 placeholder="johndoe  or  https://www.linkedin.com/in/johndoe" />
+        </div>
+      </div>
+
+      <div id="tpl-wifi" class="tpl-fields hidden">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ssid">Network Name (SSID)</label>
+            <input type="text" id="ssid" name="ssid" placeholder="MyWiFiNetwork" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="text" id="password" name="password" placeholder="password123" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="encryption">Security Type</label>
+            <select id="encryption" name="encryption">
+              <option value="WPA">WPA/WPA2</option>
+              <option value="WEP">WEP</option>
+              <option value="nopass">None</option>
+            </select>
+          </div>
+          <div class="form-group form-check">
+            <label>
+              <input type="checkbox" name="hidden" value="1" />
+              Hidden Network
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div id="tpl-vcard" class="tpl-fields hidden">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="full_name">Full Name</label>
+            <input type="text" id="full_name" name="full_name" placeholder="Jane Doe" />
+          </div>
+          <div class="form-group">
+            <label for="organization">Organisation</label>
+            <input type="text" id="organization" name="organization" placeholder="Acme Corp" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="job_title">Job Title</label>
+            <input type="text" id="job_title" name="job_title" placeholder="Software Engineer" />
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="jane@example.com" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" placeholder="+44 7700 900000" />
+          </div>
+          <div class="form-group">
+            <label for="website">Website</label>
+            <input type="url" id="website" name="website" placeholder="https://example.com" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input type="text" id="address" name="address" placeholder="123 Main Street, London" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Step 2: Colour Scheme ─────────────────────────────── -->
+    <section class="card">
+      <h2 class="section-title">2 · Colour Scheme</h2>
+      <div class="color-scheme-grid">
+        {% for scheme_key, colors in color_schemes.items() %}
+        {% if colors %}
+        <label class="color-swatch {% if scheme_key == 'classic' %}selected{% endif %}">
+          <input type="radio" name="color_scheme" value="{{ scheme_key }}"
+                 {% if scheme_key == 'classic' %}checked{% endif %}
+                 onchange="toggleCustomColor('{{ scheme_key }}')" />
+          <span class="swatch-box"
+                style="background:{{ colors[1] }}; border:2px solid {{ colors[0] }};">
+            <span style="color:{{ colors[0] }}; font-weight:bold; font-size:10px;">QR</span>
+          </span>
+          <span class="swatch-label">{{ scheme_key|capitalize }}</span>
+        </label>
+        {% endif %}
+        {% endfor %}
+        <!-- Custom -->
+        <label class="color-swatch" id="swatch-custom">
+          <input type="radio" name="color_scheme" value="custom"
+                 onchange="toggleCustomColor('custom')" />
+          <span class="swatch-box swatch-custom">
+            <span style="font-size:18px;">🎨</span>
+          </span>
+          <span class="swatch-label">Custom</span>
+        </label>
+      </div>
+
+      <div id="custom-colors" class="custom-color-row hidden">
+        <div class="form-group">
+          <label for="custom_fg">Foreground (QR) Colour</label>
+          <input type="color" id="custom_fg" name="custom_fg" value="#000000" />
+        </div>
+        <div class="form-group">
+          <label for="custom_bg">Background Colour</label>
+          <input type="color" id="custom_bg" name="custom_bg" value="#FFFFFF" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Step 3: Frame ─────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="section-title">3 · Frame</h2>
+      <div class="frame-grid">
+        {% set frame_icons = ['⬜', '▭', '▢', '🔼', '🔽'] %}
+        {% set frame_labels = ['None', 'Simple Border', 'Rounded Border', 'Banner Top', 'Banner Bottom'] %}
+        {% for style in frame_styles %}
+        <label class="frame-card {% if loop.first %}selected{% endif %}">
+          <input type="radio" name="frame_style" value="{{ style }}"
+                 {% if loop.first %}checked{% endif %}
+                 onchange="toggleFrameText('{{ style }}')" />
+          <span class="frame-preview frame-{{ style }}"></span>
+          <span class="frame-label">{{ frame_labels[loop.index0] }}</span>
+        </label>
+        {% endfor %}
+      </div>
+
+      <div id="frame-text-group" class="form-group hidden">
+        <label for="frame_text">Frame Header Text</label>
+        <input type="text" id="frame_text" name="frame_text"
+               value="Scan Me" maxlength="40" />
+      </div>
+    </section>
+
+    <!-- ── Step 4: Logo ──────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="section-title">4 · Logo</h2>
+      <div class="logo-grid">
+        <label class="logo-card selected">
+          <input type="radio" name="logo" value="none" checked />
+          <span class="logo-icon">⬛</span>
+          <span class="logo-label">None</span>
+        </label>
+        <label class="logo-card" id="logo-auto">
+          <input type="radio" name="logo" value="auto" />
+          <span class="logo-icon">🔁</span>
+          <span class="logo-label">Auto (template default)</span>
+        </label>
+        <label class="logo-card">
+          <input type="radio" name="logo" value="linkedin" />
+          <span class="logo-icon"><img src="{{ url_for('static', filename='logos/linkedin.png') }}"
+               alt="LinkedIn" class="logo-thumb" /></span>
+          <span class="logo-label">LinkedIn</span>
+        </label>
+        <label class="logo-card">
+          <input type="radio" name="logo" value="wifi" />
+          <span class="logo-icon"><img src="{{ url_for('static', filename='logos/wifi.png') }}"
+               alt="Wi-Fi" class="logo-thumb" /></span>
+          <span class="logo-label">Wi-Fi</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Step 5: Error Correction ──────────────────────────── -->
+    <section class="card">
+      <h2 class="section-title">5 · Error Correction</h2>
+      <div class="ec-grid">
+        {% for value, label in error_levels %}
+        <label class="ec-card {% if value == 'M' %}selected{% endif %}">
+          <input type="radio" name="error_correction" value="{{ value }}"
+                 {% if value == 'M' %}checked{% endif %}
+                 onchange="selectCard(this)" />
+          <span class="ec-level">{{ value }}</span>
+          <span class="ec-label">{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <p class="hint">Higher error correction allows a larger logo overlay but increases QR density.</p>
+    </section>
+
+    <!-- ── Submit ─────────────────────────────────────────────── -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary btn-large">
+        ⬛ Generate QR Code
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Pass template icons to JS
+  const TEMPLATE_ICONS = ['🌐', '👤', '💼', '📶', '✏️'];
+</script>
+{% endblock %}

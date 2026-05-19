@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}View QR Code – {{ qr.name }}{% endblock %}
+
+{% block content %}
+<div class="page-view">
+  <h1 class="page-title">{{ qr.name }}</h1>
+
+  <div class="view-layout">
+    <div class="qr-display card">
+      <img src="data:image/png;base64,{{ img_b64 }}" alt="QR Code" class="qr-image" />
+      <div class="view-actions">
+        <a href="{{ url_for('download_qr', qr_id=qr.id) }}" class="btn btn-primary">
+          ⬇ Download PNG
+        </a>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+          ＋ New QR Code
+        </a>
+        <form method="POST" action="{{ url_for('delete_qr', qr_id=qr.id) }}"
+              onsubmit="return confirm('Delete this QR code?')">
+          <button type="submit" class="btn btn-danger">🗑 Delete</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="qr-details card">
+      <h2>Details</h2>
+      <table class="detail-table">
+        <tr><th>Template</th><td>{{ qr.template_type|capitalize }}</td></tr>
+        <tr><th>Error Correction</th>
+            <td>
+              {% set ec_map = {'L': 'Low (7%)', 'M': 'Medium (15%)', 'Q': 'Quartile (25%)', 'H': 'High (30%)'} %}
+              {{ ec_map.get(qr.error_correction, qr.error_correction) }}
+            </td>
+        </tr>
+        <tr><th>Frame</th><td>{{ qr.frame_style|capitalize }}</td></tr>
+        {% if qr.frame_style != 'none' %}
+        <tr><th>Frame Text</th><td>{{ qr.frame_text }}</td></tr>
+        {% endif %}
+        <tr><th>Logo</th><td>{{ qr.logo|capitalize }}</td></tr>
+        <tr>
+          <th>Colours</th>
+          <td>
+            <span class="color-dot" style="background:{{ qr.fg_color }}"></span>
+            {{ qr.fg_color }}
+            /
+            <span class="color-dot" style="background:{{ qr.bg_color }}; border:1px solid #ccc;"></span>
+            {{ qr.bg_color }}
+          </td>
+        </tr>
+        <tr><th>Created</th><td>{{ qr.created_at }}</td></tr>
+      </table>
+
+      <h2 class="mt-2">Encoded Data</h2>
+      <pre class="data-preview">{{ qr.data }}</pre>
+    </div>
+  </div>
+
+  <div class="back-link">
+    <a href="{{ url_for('list_qr') }}">&larr; All QR Codes</a>
+  </div>
+</div>
+{% endblock %}
