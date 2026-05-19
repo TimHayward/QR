@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}My QR Codes{% endblock %}
+
+{% block content %}
+<div class="page-list">
+  <div class="list-header">
+    <h1 class="page-title">My QR Codes</h1>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">＋ New QR Code</a>
+  </div>
+
+  {% if qr_codes %}
+  <div class="qr-grid">
+    {% for qr in qr_codes %}
+    <div class="qr-card card">
+      <a href="{{ url_for('view_qr', qr_id=qr.id) }}">
+        <img src="{{ url_for('qr_image', qr_id=qr.id) }}"
+             alt="{{ qr.name }}" class="qr-thumb" />
+      </a>
+      <div class="qr-card-info">
+        <p class="qr-card-name">{{ qr.name }}</p>
+        <p class="qr-card-meta">
+          <span class="badge badge-{{ qr.template_type }}">{{ qr.template_type }}</span>
+          <span class="badge badge-ec">{{ qr.error_correction }}</span>
+        </p>
+        <p class="qr-card-date">{{ qr.created_at[:16] }}</p>
+      </div>
+      <div class="qr-card-actions">
+        <a href="{{ url_for('view_qr', qr_id=qr.id) }}" class="btn btn-sm btn-secondary">View</a>
+        <a href="{{ url_for('download_qr', qr_id=qr.id) }}" class="btn btn-sm btn-primary">⬇</a>
+        <form method="POST" action="{{ url_for('delete_qr', qr_id=qr.id) }}"
+              onsubmit="return confirm('Delete this QR code?')" style="display:inline">
+          <button class="btn btn-sm btn-danger">🗑</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state card">
+    <p class="empty-icon">⬛</p>
+    <p>No QR codes yet.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Create your first QR Code</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
